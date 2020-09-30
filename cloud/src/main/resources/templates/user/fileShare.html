@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../resource/common/layui/css/layui.css"  media="all"/>
+</head>
+<body>
+
+    <div class="layui-side" style="width: 400px">
+        <img src="/resource/image/community.jpg" style="width:400px">
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 8px;">
+            <legend>网站时间线：大事记</legend>
+        </fieldset>
+        <ul class="layui-timeline">
+            <li class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis"></i>
+                <div class="layui-timeline-content layui-text">
+                    <div class="layui-timeline-title">2020年9月29日，Web 3.0 发布。</div>
+                </div>
+            </li>
+            <li class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis"></i>
+                <div class="layui-timeline-content layui-text">
+                    <div class="layui-timeline-title">2020年9月28日，Web 里程碑版本 2.0 发布</div>
+                </div>
+            </li>
+            <li class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis"></i>
+                <div class="layui-timeline-content layui-text">
+                    <div class="layui-timeline-title">2020年9月25日，Web 首个版本发布</div>
+                </div>
+            </li>
+            <li class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis"></i>
+                <div class="layui-timeline-content layui-text">
+                    <div class="layui-timeline-title">2020年9月21日，Web孵化</div>
+                </div>
+            </li>
+            <li class="layui-timeline-item">
+                <i class="layui-icon layui-anim layui-anim-rotate layui-anim-loop layui-timeline-axis"></i>
+                <div class="layui-timeline-content layui-text">
+                    <div class="layui-timeline-title">更久前，轮子时代。学习，准备中</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="layui-body layui-form" style='left:400px;overflow-y:hidden'>
+        <table id="userTables" lay-filter="userTables"></table>
+    </div>
+    <script type="text/javascript" src="../resource/common/layui/layui.js"></script>
+    <script>
+        layui.use(['table', 'layer', 'laydate', 'form'], function () {
+            var table = layui.table,
+                $ = layui.$,
+                layer = layui.layer,
+                form = layui.form;
+            var otherHeight = Math.ceil($("blockquote").height() + 25);
+            var tableIns = table.render({
+                elem: '#userTables'
+                , height: 'full-' + otherHeight
+                , url: '/document' //数据接口
+                , method: 'get'
+                , page: true //开启分页
+                , id: 'tableId'
+                , where: {
+                    shareFlag: "1"
+                }
+                , limits: [10, 15, 30]
+                , limit: 15
+                , cols: [
+                    [ //表头
+                          {field: 'index', title: '序号', width: 65, align: 'center', unresize:true}
+                        , {field: 'name', title: '文件名', unresize:true}
+                        , {field: 'size', title: '文件大小', width: 130, align: 'center', unresize:true}
+                        , {field: 'author', title: '上传作者', width: 130, align: 'center', unresize:true}
+                        , {field: 'createTime', title: '创建时间', width: 260, align: 'center', unresize:true}
+                    ]
+                ]
+            });
+
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../resource/common/layui/css/layui.css"  media="all"/>
+</head>
+<body style="overflow:hidden;">
+    <script type="text/html" id="operate">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        {{#  if(d.shareFlag=='是'){ }}
+        <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="forbidden">取消分享</a>
+        {{#  } else if(d.shareFlag=='否'){ }}
+        <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="startShare">分享</a>
+        {{#  } }}
+    </script>
+    <button type="button" class="layui-btn" id="test3"><i class="layui-icon"></i>上传文件</button>
+    <table id="userTables" lay-filter="userTables"></table>
+    <script type="text/javascript" src="../resource/common/layui/layui.js"></script>
+    <script>
+        layui.use('upload', function() {
+            var $ = layui.jquery
+                , upload = layui.upload;
+            //指定允许上传的文件类型
+            upload.render({
+                elem: '#test3'
+                , url: '/upload' //上传接口
+                , accept: 'file' //普通文件
+                , done: function (res) {
+                    layer.msg('上传成功');
+                    active.reload();
+                    console.log(res);
+                }
+            });
+        });
+    </script>
+    <script>
+        layui.use(['table', 'layer', 'laydate', 'form'], function () {
+            var table = layui.table,
+                $ = layui.$,
+                layer = layui.layer,
+                form = layui.form;
+            var otherHeight = Math.ceil($("blockquote").height() + 55);
+            var tableIns = table.render({
+                elem: '#userTables'
+                , height: 'full-' + otherHeight
+                , url: '/document' //数据接口
+                , method: 'get'
+                , page: true //开启分页
+                , id: 'tableId'
+                , limits: [10, 15, 30]
+                , limit: 15
+                , cols: [
+                    [ //表头
+                        {'type': 'checkbox', 'fixed': 'left'}
+                        , {field: 'index', title: '序号'}
+                        , {field: 'name', title: '文件名'}
+                        , {field: 'size', title: '文件大小'}
+                        , {field: 'createTime', title: '创建时间'}
+                        , {field: 'shareFlag', title: '是否分享'}
+                        , {title: '操作', toolbar: '#operate', 'fixed': 'right', width: 150}
+                    ]
+                ]
+            });
+
+            //监听工具条
+            table.on('tool(userTables)', function (obj) {
+                var data = obj.data;
+                console.log(data);
+                if (obj.event === 'del') {
+                    //删除
+                    delUser(data.id);
+                } else if (obj.event === 'startShare') {
+                    //分享
+                    editshareFlag(data.id, 1)
+                } else if (obj.event === "forbidden") {
+                    //取消分享
+                    editshareFlag(data.id, 0)
+                } else if (obj.event === "edit") {
+                    //修改用户
+                    layer.open({
+                        type: 2,
+                        title: "修改用户",
+                        shadeClose: false, //点击遮罩关闭层
+                        area: ['50%', '70%'],
+                        content: "/user/editUserHouser.do?id=" + data.id
+                    });
+                }
+            });
+
+            active = {
+                reload: function () {
+                    //执行重载
+                    table
+                        .reload('tableId', {
+                            url: '/document'
+                            , method: 'get'
+                            , page: {
+                                curr: 1 //重新从第 1 页开始
+                            }
+                        });
+                }
+            };
+
+            //更改文件分享状态函数
+            function editshareFlag(id, shareFlag) {
+                layer.confirm('确认更改文件分享状态?', function (index) {
+                    $.ajax({
+                        url: "/shareFlag.do",
+                        type: "put",
+                        data: {"id": id, "shareFlag": shareFlag},
+                        dataType: "json",
+                        success: function (result) {
+                            if (!result.status) {
+                                layer.msg(result.msg, {time: 2000});
+                                return false;
+                            }
+                            layer.msg("更改成功!", {time: 1000});
+                            active.reload();
+                        }
+                    });
+                    layer.close(index);
+                })
+            }
+        });
+    </script>
+</body>
+</html>

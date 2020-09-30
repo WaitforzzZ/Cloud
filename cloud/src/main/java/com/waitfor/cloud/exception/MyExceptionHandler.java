@@ -1,0 +1,69 @@
+package com.waitfor.cloud.exception;
+
+import com.waitfor.cloud.util.Result;
+import com.waitfor.cloud.util.ResultResponse;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * @Author Waitfor
+ * @Date 2020-9-29 上午 9:18
+ * @Version 1.0
+ */
+@ControllerAdvice
+public class MyExceptionHandler {
+
+    public static final String MY_ERROR_VIEW = "404";
+
+//	@ExceptionHandler(value = Exception.class)
+//    public Object errorHandler(HttpServletRequest reqest,
+//    		HttpServletResponse response, Exception e) throws Exception {
+//
+//    	e.printStackTrace();
+//
+//		ModelAndView mav = new ModelAndView();
+//        mav.addObject("exception", e);
+//        mav.addObject("url", reqest.getRequestURL());
+//        mav.setViewName(IMOOC_ERROR_VIEW);
+//        return mav;
+//    }
+
+    @ExceptionHandler(value = Exception.class)
+    public Object errorHandler(HttpServletRequest reqest,
+                               HttpServletResponse response, Exception e) throws Exception {
+
+        e.printStackTrace();
+
+        if (isAjax(reqest)) {
+            return Result.resuleError(e.getMessage());
+        } else {
+            ModelAndView mv = new ModelAndView();
+            mv.addObject("exception", e);
+            mv.addObject("url", reqest.getRequestURL());
+            mv.setViewName(MY_ERROR_VIEW);
+            return mv;
+        }
+    }
+
+    /**
+     *
+     * @Title: IMoocExceptionHandler.java
+     * @Package com.imooc.exception
+     * @Description: 判断是否是ajax请求
+     * Copyright: Copyright (c) 2017
+     * Company:FURUIBOKE.SCIENCE.AND.TECHNOLOGY
+     *
+     * @author leechenxiang
+     * @date 2017年12月3日 下午1:40:39
+     * @version V1.0
+     */
+    public static boolean isAjax(HttpServletRequest httpRequest){
+        return  (httpRequest.getHeader("X-Requested-With") != null
+                && "XMLHttpRequest"
+                .equals( httpRequest.getHeader("X-Requested-With").toString()) );
+    }
+}

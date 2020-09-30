@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="../resource/js/config/jquery-1.7.2.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="../resource/common/layui/css/layui.css"  media="all"/>
+    <script>
+        var folderData = [];
+        $(function(){
+            $.ajax({
+                url: "/folder.do",
+                type: "get",
+                data: {},
+                dataType: "json",
+                success: function (result) {
+                    if (result.status) {
+                        folderData.push(result.obje);
+                    }
+                }
+            });
+        })
+    </script>
+</head>
+<body>
+    <table id="userTables" lay-filter="userTables"></table>
+    <script type="text/javascript" src="../resource/common/layui/layui.js"></script>
+    <!--左侧导航-->
+    <div class="layui-side" style="height: 600px;overflow: hidden;">
+        <h2 style="margin-left: 10px;">文件夹列表</h2>
+        <div id="test1" class="demo-tree-more" style="width: 100%;height:574px;overflow:scroll"></div>
+    </div>
+    <!-- 右侧-->
+    <div class="layui-body layui-form" style="overflow:hidden;">
+        <iframe frameborder="0" scrolling="no" style="width:100%;height:100%" src="file/0" id="file"></iframe>
+    </div>
+
+    <script>
+        var dataNew = [];
+        layui.use(["tree", 'util'], function(){
+            var tree = layui.tree
+                ,layer = layui.layer
+                ,util = layui.util
+
+            //常规用法
+            tree.render({
+                elem: '#test1' //默认是点击节点可进行收缩
+                ,id: 'demoId' //定义索引
+                ,operate: function(obj){
+                    var type = obj.type; //得到操作类型：add、edit、del
+                    var data = obj.data; //得到当前节点的数据
+                    var elem = obj.elem; //得到当前节点元素
+
+                    //Ajax 操作
+                    var id = data.id; //得到节点索引
+                    if(type === 'add'){ //增加节点
+                        $.ajax({
+                            url: "/folder.do",
+                            type: "post",
+                            data: {"title":data.title,"id":id},
+                            dataType: "json",
+                            success: function (result) {
+                                if (!result.status) {
+                                    layer.msg(result.msg, {time: 2000});
+                                    dataNew =[]
+                                    getData();
+                                    //可以重载所有基础参数
+                                    tree.reload('demoId', {data:dataNew
+                                        //新的参数
+                                    });
+                                }else{
+                                    layer.msg("创建成功", {time: 2000});
+                                    dataNew =[]
+                                    getData();
+                                    //可以重载所有基础参数
+                                    tree.reload('demoId', {data:dataNew
+                                        //新的参数
+                                    });
+                                }
+                            }
+                        });
+                    } else if(type === 'update'){ //修改节点
+                        $.ajax({
+                            url: "/folder.do",
+                            type: "put",
+                            data: {"title":data.title,"id":id,"path":data.path,"author": data.author,"createTime":data.createTime,"status":data.status},
+                            dataType: "json",
+                            success: function (result) {
+                                if (!result.status) {
+                                    layer.msg(result.msg, {time: 2000});
+                                }else{
+                                    layer.msg("修改成功", {time: 2000});
+                                    dataNew =[]
+                                    getData();
+                                    //可以重载所有基础参数
+                                    tree.reload('demoId', {data:dataNew
+                                        //新的参数
+                                    });
+                                }
+                            }
+                        });
+                    } else if(type === 'del'){
+                        $.ajax({
+                            url: "/folder.do",
+                            type: "delete",
+                            data: {"id":id},
+                            dataType: "json",
+                            success: function (result) {
+                                if (!result.status) {
+                                    layer.msg(result.msg, {time: 2000});
+                                    dataNew =[]
+                                    getData();
+                                    //可以重载所有基础参数
+                                    tree.reload('demoId', {data:dataNew
+                                        //新的参数
+                                    });
+                                }else{
+                                    layer.msg("删除成功", {time: 2000});
+                                    dataNew =[]
+                                    getData();
+                                    //可以重载所有基础参数
+                                    tree.reload('demoId', {data:dataNew
+                                        //新的参数
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+                ,data: folderData
+                ,showLine: false  //是否开启连接线
+                ,edit: ['add', 'update', 'del'] //操作节点的图标
+                ,click: function(obj){
+                    var data = obj.data;  //获取当前点击的节点数据
+                    var address = 'file/'+ data.id;
+                    $("#file").attr("src", address);
+                }
+            });
+        });
+
+        function getData(){
+            $.ajax({
+                url: "/folder.do",
+                type: "get",
+                data: {},
+                dataType: "json",
+                async: false, // 同步
+                success: function (result) {
+                    if (result.status) {
+                        dataNew.push(result.obje);
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
